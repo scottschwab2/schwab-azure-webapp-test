@@ -1,0 +1,165 @@
+<html>
+    <head>
+    <title>Enter RegEx Patterns</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+    let counter = 0
+    function addPanel(parent, name, title) {
+        let panel = document.createElement("div");
+        panel.className = "panel";
+        counter++;
+        panel.id = name + counter;
+        let block = document.createElement("div");
+        block.className = "regexPanel";
+
+        let input = document.createElement("input");
+        input.type = "text";
+        input.name = name + "regex";
+        input.id = name + "regex" + counter;
+        input.className = "regexInput";
+         
+        let label = document.createElement("label");
+        label.for = input.id;
+        label.innerHTML = "Regex Pattern";
+
+        let productionCheckbox = document.createElement("input");
+        productionCheckbox.type = "checkbox";
+        productionCheckbox.name = name + "production";
+        productionCheckbox.id = name + "production" + counter;
+        productionCheckbox.className = "productionCheckbox";
+        productionCheckbox.value = "production";
+
+        let productionLabel = document.createElement("label");
+        productionLabel.for = productionCheckbox.id;
+        productionLabel.innerHTML = "Type of branches used for: Production";
+
+        let stagingCheckbox = document.createElement("input");
+        stagingCheckbox.type = "checkbox";
+        stagingCheckbox.name = name + "staging";
+        stagingCheckbox.id = name + "staging" + counter;
+        stagingCheckbox.className = "stagingCheckbox";
+        stagingCheckbox.value = "staging/test";
+        
+        let stagingLabel = document.createElement("label");
+        stagingLabel.for = stagingCheckbox.id;
+        stagingLabel.innerHTML = "Staging/Test";
+
+        let testBox = document.createElement("textarea");
+        testBox.type = "textarea";
+        testBox.name = name + "test";
+        testBox.id = name + "testBox" + counter;
+        testBox.className = "testInput";
+
+        let testButton = document.createElement("input");
+        testButton.type = "button";
+        testButton.value = "Test";
+        testButton.className = "testButton";
+        testButton.onclick = function() { 
+            let regex = document.getElementById(name + "regex" + counter).value;
+            let test = document.getElementById(name + "testBox" + counter).value;
+            getBranches(regex, testBox.id);
+        };
+
+        block.appendChild(label);
+        block.appendChild(input);
+        block.appendChild(document.createElement("br"));
+        block.appendChild(productionLabel);
+        block.appendChild(productionCheckbox);
+        block.appendChild(stagingLabel);
+        block.appendChild(stagingCheckbox);
+        block.appendChild(document.createElement("br"));
+        block.appendChild(testButton);
+        block.appendChild(testBox);
+        panel.appendChild(block);
+
+        document.getElementById(parent).appendChild(panel);
+    }
+
+    function getBranches(regex_pattern, target) {
+        token = '';
+        let repo = document.getElementById("repoNameText").value;
+        repo = "janus-po-billing-invoices"
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+        axios.defaults.headers.post['X-GitHub-Api-Verson'] = "2022-11-28"
+        axios.defaults.headers.post['Accept'] = 'application/vnd.github+json';
+
+        axios.get("https://api.github.com/repos/CenturyLink/" + repo + "/branches?per_page=100")
+        .then(function (response) {
+            console.log(regex_pattern)
+            document.getElementById(target).value = "";
+            for (let i = 0; i < response.data.length; i++) {
+                if (response.data[i].name.match(regex_pattern)) {
+                    document.getElementById(target).value += response.data[i].name + "\r\n";
+                    console.log(response.data[i].name);
+                }
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    </script>
+    <style>
+        .body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .panel {
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            position: relative;
+        }
+        label.regexLabel {
+            display: inline-block;
+            width: 100px;
+            margin: 10px;
+        }
+        input.regexInput {
+            display: inline-block;
+            width: 200px;
+            margin: 10px;
+        }
+        label.productionLabel {
+            display: inline-block;
+            width: 100px;
+            margin: 10px;
+        }
+        input.productionCheckbox {
+            display: inline-block;
+            width: 20px;
+        }
+        label.stagingLabel {
+            display: inline-block;
+            width: 100px;
+            margin-left: 50px;
+        }
+        input.stagingCheckbox {
+            display: inline-block;
+            width: 20px;
+            padding: 10px;
+        }
+        input.testButton {
+            display: inline-block;
+            width: 100px;
+            margin: 10px;
+        }
+        textarea.testBox {
+            padding: 30px;
+            margin: 30px;
+            width: 400px;
+            height: 300px;
+        }
+    </style>
+    </head>
+    <body>
+        <form>
+            <div id="repoName">
+                <label for="repoNameText">Repository Name</label>
+                <input type="text" name="repoName" id="repoNameText">
+            </div>
+            <div id="inputFields">
+                <button type="button" id="addNewPanel" onclick="addPanel('inputFields','hi','hit')">Add New RegEx</button>
+            </div>
+        </form>
+</html>
